@@ -4,5 +4,6 @@
   "url": "http://localhost:8080",
   "default_rooms": ["general", "random", "dev", "all"],
   "socket_path": "/ws",
-  "web_path": "web"
+  "web_path": "web",
+  "motd_path": "motd"
 }
