@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 )
 
@@ -42,6 +43,23 @@ type Config struct {
 type Chat struct {
 	name    string
 	clients map[*websocket.Conn]bool
+}
+
+func main() {
+	var err error
+	config, err = loadConfig()
+	if err != nil {
+		log.Fatalf("Error loading config: %v", err)
+	}
+
+	r := mux.NewRouter()
+	r.HandleFunc(config.SocketPath, handleWebSocket)
+	r.HandleFunc("/", serveIndex)
+	r.HandleFunc("/chat", serveChat)
+
+	addr := fmt.Sprintf(":%d", config.Port)
+	fmt.Printf("Server started on %s%s\n", config.URL, addr)
+	log.Fatal(http.ListenAndServe(addr, r))
 }
 
 func (c *Chat) broadcast(message []byte) {
@@ -286,20 +304,4 @@ func serveIndex(w http.ResponseWriter, r *http.Request) {
 }
 func serveChat(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, filepath.Join(config.WebPath, "chat.html"))
-}
-
-func main() {
-	var err error
-	config, err = loadConfig()
-	if err != nil {
-		log.Fatalf("Error loading config: %v", err)
-	}
-
-	http.HandleFunc(config.SocketPath, handleWebSocket)
-	http.HandleFunc("/index.html", serveIndex)
-	http.HandleFunc("/chat", serveChat)
-
-	addr := fmt.Sprintf(":%d", config.Port)
-	fmt.Printf("Server started on %s%s\n", config.URL, addr)
-	log.Fatal(http.ListenAndServe(addr, nil))
 }
