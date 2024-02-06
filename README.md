@@ -1,4 +1,4 @@
-# socketchat
+# ket
 
 ## usage
 
