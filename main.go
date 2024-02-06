@@ -296,7 +296,7 @@ func main() {
 	}
 
 	http.HandleFunc(config.SocketPath, handleWebSocket)
-	http.HandleFunc("/", serveIndex)
+	http.HandleFunc("/index.html", serveIndex)
 	http.HandleFunc("/chat", serveChat)
 
 	addr := fmt.Sprintf(":%d", config.Port)
