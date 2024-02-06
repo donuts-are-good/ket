@@ -284,6 +284,9 @@ func getMOTD(roomName string) (string, error) {
 func serveIndex(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, filepath.Join(config.WebPath, "index.html"))
 }
+func serveChat(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, filepath.Join(config.WebPath, "chat.html"))
+}
 
 func main() {
 	var err error
@@ -294,6 +297,7 @@ func main() {
 
 	http.HandleFunc(config.SocketPath, handleWebSocket)
 	http.HandleFunc("/", serveIndex)
+	http.HandleFunc("/chat", serveChat)
 
 	addr := fmt.Sprintf(":%d", config.Port)
 	fmt.Printf("Server started on %s%s\n", config.URL, addr)
