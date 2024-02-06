@@ -90,9 +90,7 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 
 	chat.clients[conn] = true
 
-	if len(chat.clients) == 1 {
-		chat.sendMOTD(conn)
-	}
+	chat.sendMOTD(conn)
 
 	for {
 		_, message, err := conn.ReadMessage()
