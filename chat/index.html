@@ -7,6 +7,23 @@
     * {
       font-family: monospace;
     }
+    
+    .container {
+      position: relative;
+      min-height: 100vh;
+    }
+    
+    #chatMessages {
+      margin-bottom: 60px; /* Adjust the margin as needed */
+    }
+    
+    #inputContainer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      margin-bottom: 20px; /* Adjust the margin as needed */
+    }
   </style>
 </head>
 <body>
@@ -14,7 +31,7 @@
     <pre>
       <div id="chatMessages"></div>
     </pre>
-    <div class="input-group mb-3">
+    <div id="inputContainer" class="input-group mb-3">
       <input type="text" id="messageInput" class="form-control" placeholder="Enter message..." aria-label="Enter message">
       <button class="btn btn-primary" id="sendMessageButton">Send</button>
     </div>
@@ -35,13 +52,26 @@
       const messageElement = document.createElement('p');
       messageElement.innerText = message;
       chatMessages.appendChild(messageElement);
+      messageElement.scrollIntoView();
     });
 
     sendMessageButton.addEventListener('click', function () {
-      const message = messageInput.value;
-      socket.send(message);
-      messageInput.value = '';
+      sendMessage();
     });
+
+    messageInput.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter') {
+        sendMessage();
+      }
+    });
+
+    function sendMessage() {
+      const message = messageInput.value;
+      if (message.trim() !== '') {
+        socket.send(message);
+        messageInput.value = '';
+      }
+    }
   </script>
 </body>
 </html>

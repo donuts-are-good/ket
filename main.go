@@ -176,7 +176,7 @@ func handleUsernameChange(conn *websocket.Conn, chat *Chat, message []byte) {
 func handleChatMessage(conn *websocket.Conn, chat *Chat, message []byte) {
 	username := getUsername(conn)
 	timestamp := strconv.FormatInt(time.Now().UnixNano(), 10)
-	formattedMessage := fmt.Sprintf("%s(%s): %s", username, timestamp[:8], string(message))
+	formattedMessage := fmt.Sprintf("%s(%s): %s", username, timestamp, string(message))
 
 	chat.broadcast([]byte(formattedMessage))
 }
