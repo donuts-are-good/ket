@@ -24,6 +24,8 @@ type Config struct {
 	ChatServer   string   `json:"chat_server"`
 	URL          string   `json:"url"`
 	DefaultRooms []string `json:"default_rooms"`
+	SocketPath   string   `json:"socket_path"`
+	WebPath      string   `json:"web_path"`
 }
 
 type Chat struct {
@@ -123,9 +125,9 @@ func loadConfig() (*Config, error) {
 }
 
 func getMOTD(chatName string) (string, error) {
-	motdPath := filepath.Join("motd", chatName+".motd.txt")
+	motdPath := filepath.Join(config.WebPath, "motd", chatName+".motd.txt")
 	if _, err := os.Stat(motdPath); os.IsNotExist(err) {
-		motdPath = filepath.Join("motd", "default.motd.txt")
+		motdPath = filepath.Join(config.WebPath, "motd", "default.motd.txt")
 	}
 
 	motdBytes, err := os.ReadFile(motdPath)
@@ -136,6 +138,10 @@ func getMOTD(chatName string) (string, error) {
 	return string(motdBytes), nil
 }
 
+func serveIndex(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, filepath.Join(config.WebPath, "index.html"))
+}
+
 func main() {
 	var err error
 	config, err = loadConfig()
@@ -143,7 +149,8 @@ func main() {
 		log.Fatalf("Error loading config: %v", err)
 	}
 
-	http.HandleFunc("/ws", handleWebSocket)
+	http.HandleFunc(config.SocketPath, handleWebSocket)
+	http.HandleFunc("/", serveIndex)
 
 	addr := fmt.Sprintf(":%d", config.Port)
 	fmt.Printf("Server started on http://localhost%s\n", addr)

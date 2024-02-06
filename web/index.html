@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat Instructions</title>
+</head>
+<body>
+    <h1>Welcome to the Chat!</h1>
+    <p>
+        To join the chat, follow these steps:
+    </p>
+    <ol>
+        <li>Open a WebSocket connection to <code>socket.3ck0.com</code>.</li>
+        <li>Specify the chat name as a query parameter, e.g., <code>?chatname=general</code>.</li>
+        <li>Send and receive messages using the WebSocket connection.</li>
+    </ol>
+    <h2>Setting Up Your Own Server</h2>
+    <p>
+        If you want to set up your own chat server using this software, follow these steps:
+    </p>
+    <ol>
+        <li>Clone the repository and navigate to the project directory.</li>
+        <li>Modify the <code>config.json</code> file to configure the server settings.</li>
+        <li>Run the server using the command <code>go run main.go</code>.</li>
+        <li>Open a WebSocket connection to your server's URL.</li>
+        <li>Specify the chat name as a query parameter, e.g., <code>?chatname=general</code>.</li>
+        <li>Send and receive messages using the WebSocket connection.</li>
+    </ol>
+</body>
+</html>

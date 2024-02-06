@@ -2,5 +2,7 @@
   "port": 8080,
   "chat_server": "My Chat Server",
   "url": "http://localhost:8080",
-  "default_rooms": ["general", "random", "dev", "all"]
+  "default_rooms": ["general", "random", "dev", "all"],
+  "socket_path": "/ws",
+  "web_path": "web"
 }
