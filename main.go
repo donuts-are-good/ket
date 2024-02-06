@@ -18,8 +18,7 @@ import (
 var (
 	upgrader = websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
-			// Allow requests from the specified origin
-			return r.Header.Get("Origin") == config.URL
+			return true
 		},
 	}
 	chats  = make(map[string]*Chat)
@@ -91,7 +90,6 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 
 	chat.clients[conn] = true
 
-	// Send MOTD to new user
 	if len(chat.clients) == 1 {
 		chat.sendMOTD(conn)
 	}
@@ -133,7 +131,6 @@ func getUsername(conn *websocket.Conn) string {
 		return username
 	}
 
-	// Generate a random 4-character alphanumeric string
 	charset := "ABCDEF1234567890"
 	b := make([]byte, 4)
 	for i := range b {
