@@ -48,7 +48,6 @@ func (c *Chat) broadcast(message []byte) {
 	for client := range c.clients {
 		err := client.WriteMessage(websocket.TextMessage, message)
 		if err != nil {
-			log.Printf("Error broadcasting message to client: %v", err)
 			client.Close()
 			delete(c.clients, client)
 			delete(users, client)
@@ -100,7 +99,6 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	for {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
-			log.Printf("Error reading message: %v", err)
 			chat.userLeft(conn)
 			break
 		}
