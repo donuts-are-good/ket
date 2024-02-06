@@ -75,20 +75,20 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chatName := r.URL.Query().Get("chatname")
-	if chatName == "" {
-		log.Println("Chat name is required")
+	roomName := r.URL.Query().Get("room")
+	if roomName == "" {
+		log.Println("room name is required")
 		conn.Close()
 		return
 	}
 
-	chat, ok := chats[chatName]
+	chat, ok := chats[roomName]
 	if !ok {
 		chat = &Chat{
-			name:    chatName,
+			name:    roomName,
 			clients: make(map[*websocket.Conn]bool),
 		}
-		chats[chatName] = chat
+		chats[roomName] = chat
 	}
 
 	chat.clients[conn] = true
@@ -251,17 +251,17 @@ func (c *Chat) userLeft(conn *websocket.Conn) {
 	delete(users, conn)
 }
 
-func getMOTD(chatName string) (string, error) {
-	if chatName == "" {
-		return "", fmt.Errorf("chat name is required")
+func getMOTD(roomName string) (string, error) {
+	if roomName == "" {
+		return "", fmt.Errorf("room name is required")
 	}
 
-	sanitizedChatName := sanitizeString(chatName, 50, az09)
-	if sanitizedChatName != chatName {
+	sanitizedRoomName := sanitizeString(roomName, 50, az09)
+	if sanitizedRoomName != roomName {
 		return "", fmt.Errorf("invalid characters in chat name")
 	}
 
-	motdPath := filepath.Join(config.MotdPath, sanitizedChatName+".motd.txt")
+	motdPath := filepath.Join(config.MotdPath, sanitizedRoomName+".motd.txt")
 	if _, err := os.Stat(motdPath); os.IsNotExist(err) {
 		motdPath = filepath.Join(config.MotdPath, "default.motd.txt")
 	}
