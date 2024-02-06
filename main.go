@@ -240,13 +240,13 @@ func loadConfig() (*Config, error) {
 
 func (c *Chat) userJoined(conn *websocket.Conn) {
 	username := getUsername(conn)
-	formattedMessage := fmt.Sprintf("++> %s has joined the chat", username)
+	formattedMessage := fmt.Sprintf("** %s has joined the chat", username)
 	c.broadcast([]byte(formattedMessage))
 }
 
 func (c *Chat) userLeft(conn *websocket.Conn) {
 	username := getUsername(conn)
-	formattedMessage := fmt.Sprintf("--> %s has left the chat", username)
+	formattedMessage := fmt.Sprintf("** %s has left the chat", username)
 	c.broadcast([]byte(formattedMessage))
 	delete(c.clients, conn)
 	conn.Close()
