@@ -153,6 +153,6 @@ func main() {
 	http.HandleFunc("/", serveIndex)
 
 	addr := fmt.Sprintf(":%d", config.Port)
-	fmt.Printf("Server started on http://localhost%s\n", addr)
+	fmt.Printf("Server started on %s%s\n", config.URL, addr)
 	log.Fatal(http.ListenAndServe(addr, nil))
 }
