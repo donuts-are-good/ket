@@ -110,13 +110,45 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleMessage(conn *websocket.Conn, chat *Chat, message []byte) {
-	if strings.HasPrefix(string(message), "/user ") {
+	if strings.HasPrefix(string(message), "/user ") || strings.HasPrefix(string(message), "/username ") || strings.HasPrefix(string(message), "/name ") {
 		handleUsernameChange(conn, chat, message)
 	} else if strings.HasPrefix(string(message), "/join ") {
 		handleRoomJoin(conn, chat, message)
+	} else if strings.HasPrefix(string(message), "/users") {
+		handleUserList(conn, chat)
+	} else if strings.HasPrefix(string(message), "/help") {
+		handleHelp(conn)
 	} else {
 		handleChatMessage(conn, chat, message)
 	}
+}
+
+func handleHelp(conn *websocket.Conn) {
+	helpMessage := `Available commands:
+- /user <new_username>: Change your username
+- /join <room_name>: Join a new room
+- /users: List all users in the current room
+- /help: Show this help screen`
+	conn.WriteMessage(websocket.TextMessage, []byte(helpMessage))
+}
+
+func handleUserList(conn *websocket.Conn, chat *Chat) {
+	roomName := chat.name
+	userList := getUsersInRoom(roomName)
+	message := fmt.Sprintf("%d users in #%s\n%s", len(userList), roomName, strings.Join(userList, ", "))
+	conn.WriteMessage(websocket.TextMessage, []byte(message))
+}
+
+func getUsersInRoom(roomName string) []string {
+	var userList []string
+	chat, ok := chats[roomName]
+	if ok {
+		for conn := range chat.clients {
+			username := getUsername(conn)
+			userList = append(userList, username)
+		}
+	}
+	return userList
 }
 
 func handleUsernameChange(conn *websocket.Conn, chat *Chat, message []byte) {
