@@ -6,7 +6,7 @@
        ░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ 
 ░▒▓███████▓▒░ ░▒▓██████▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓████████▓▒░ 
 
-=+ https://socket.3ck0.com
-=+ ws://socket.3ck0.com/chat?chatname=chatname
+=+ https://socket.3ck0.com:2082/
+=+ ws://socket.3ck0.com:2082/chat?chatname=general
 
 this is the general motd
