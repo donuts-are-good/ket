@@ -90,6 +90,7 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	}
 
 	chat.clients[conn] = true
+	chat.userJoined(conn)
 
 	chat.sendMOTD(conn)
 
@@ -97,9 +98,7 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
 			log.Printf("Error reading message: %v", err)
-			delete(chat.clients, conn)
-			conn.Close()
-			delete(users, conn)
+			chat.userLeft(conn) // Notify all clients that a user has left
 			break
 		}
 
@@ -164,6 +163,21 @@ func loadConfig() (*Config, error) {
 	}
 
 	return &config, nil
+}
+
+func (c *Chat) userJoined(conn *websocket.Conn) {
+	username := getUsername(conn)
+	formattedMessage := fmt.Sprintf("%s has joined the chat", username)
+	c.broadcast([]byte(formattedMessage))
+}
+
+func (c *Chat) userLeft(conn *websocket.Conn) {
+	username := getUsername(conn)
+	formattedMessage := fmt.Sprintf("%s has left the chat", username)
+	c.broadcast([]byte(formattedMessage))
+	delete(c.clients, conn)
+	conn.Close()
+	delete(users, conn)
 }
 
 func getMOTD(chatName string) (string, error) {

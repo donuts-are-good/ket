@@ -1,9 +1,9 @@
 {
   "port": 8080,
   "chat_server": "My Chat Server",
-  "url": "http://localhost:8080",
+  "url": "example.com",
   "default_rooms": ["general", "random", "dev", "all"],
-  "socket_path": "/ws",
+  "socket_path": "/chat",
   "web_path": "web",
   "motd_path": "motd"
 }
