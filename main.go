@@ -161,10 +161,10 @@ func handleUsernameChange(conn *websocket.Conn, chat *Chat, message []byte) {
 		if isUsernameAvailable(newUsername) {
 			oldUsername := users[conn]
 			users[conn] = newUsername
-			formattedMessage := fmt.Sprintf("%s is now known as %s", oldUsername, newUsername)
+			formattedMessage := fmt.Sprintf("'%s' is now known as '%s'", oldUsername, newUsername)
 			chat.broadcast([]byte(formattedMessage))
 		} else {
-			errMessage := fmt.Sprintf("username %s is already taken", newUsername)
+			errMessage := fmt.Sprintf("'username' %s is already taken", newUsername)
 			conn.WriteMessage(websocket.TextMessage, []byte(errMessage))
 		}
 	} else {
