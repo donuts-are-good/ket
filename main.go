@@ -112,8 +112,6 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 func handleMessage(conn *websocket.Conn, chat *Chat, message []byte) {
 	if strings.HasPrefix(string(message), "/user ") || strings.HasPrefix(string(message), "/username ") || strings.HasPrefix(string(message), "/name ") {
 		handleUsernameChange(conn, chat, message)
-	} else if strings.HasPrefix(string(message), "/join ") {
-		handleRoomJoin(conn, chat, message)
 	} else if strings.HasPrefix(string(message), "/users") {
 		handleUserList(conn, chat)
 	} else if strings.HasPrefix(string(message), "/help") {
@@ -152,37 +150,29 @@ func getUsersInRoom(roomName string) []string {
 }
 
 func handleUsernameChange(conn *websocket.Conn, chat *Chat, message []byte) {
-	newUsername := strings.TrimPrefix(string(message), "/user ")
-	newUsername = sanitizeString(newUsername, 20, azAZ09)
-	if isUsernameAvailable(newUsername) {
-		oldUsername := users[conn]
-		users[conn] = newUsername
-		formattedMessage := fmt.Sprintf("%s is now known as %s", oldUsername, newUsername)
-		chat.broadcast([]byte(formattedMessage))
-	} else {
-		errMessage := fmt.Sprintf("Username %s is already taken", newUsername)
-		conn.WriteMessage(websocket.TextMessage, []byte(errMessage))
+	newUsername := ""
+	if strings.HasPrefix(string(message), "/user ") {
+		newUsername = strings.TrimPrefix(string(message), "/user ")
+	} else if strings.HasPrefix(string(message), "/name ") {
+		newUsername = strings.TrimPrefix(string(message), "/name ")
+	} else if strings.HasPrefix(string(message), "/username ") {
+		newUsername = strings.TrimPrefix(string(message), "/username ")
 	}
-}
 
-func handleRoomJoin(conn *websocket.Conn, chat *Chat, message []byte) {
-	roomName := strings.TrimPrefix(string(message), "/join ")
-	roomName = sanitizeString(roomName, 20, azAZ09)
-	if roomName != "" {
-		chatName := roomName
-		chat, ok := chats[chatName]
-		if !ok {
-			chat = &Chat{
-				name:    chatName,
-				clients: make(map[*websocket.Conn]bool),
-			}
-			chats[chatName] = chat
+	newUsername = sanitizeString(newUsername, 20, azAZ09)
+	if newUsername != "" {
+		if isUsernameAvailable(newUsername) {
+			oldUsername := users[conn]
+			users[conn] = newUsername
+			formattedMessage := fmt.Sprintf("%s is now known as %s", oldUsername, newUsername)
+			chat.broadcast([]byte(formattedMessage))
+		} else {
+			errMessage := fmt.Sprintf("Username %s is already taken", newUsername)
+			conn.WriteMessage(websocket.TextMessage, []byte(errMessage))
 		}
-		chat.clients[conn] = true
-		chat.userJoined(conn)
-		chat.sendMOTD(conn)
-
-		chat.userLeft(conn)
+	} else {
+		errMessage := "Invalid username format"
+		conn.WriteMessage(websocket.TextMessage, []byte(errMessage))
 	}
 }
 
