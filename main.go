@@ -124,7 +124,6 @@ func handleMessage(conn *websocket.Conn, chat *Chat, message []byte) {
 func handleHelp(conn *websocket.Conn) {
 	helpMessage := `Available commands:
 - /user <new_username>: Change your username
-- /join <room_name>: Join a new room
 - /users: List all users in the current room
 - /help: Show this help screen`
 	conn.WriteMessage(websocket.TextMessage, []byte(helpMessage))
@@ -167,11 +166,11 @@ func handleUsernameChange(conn *websocket.Conn, chat *Chat, message []byte) {
 			formattedMessage := fmt.Sprintf("%s is now known as %s", oldUsername, newUsername)
 			chat.broadcast([]byte(formattedMessage))
 		} else {
-			errMessage := fmt.Sprintf("Username %s is already taken", newUsername)
+			errMessage := fmt.Sprintf("username %s is already taken", newUsername)
 			conn.WriteMessage(websocket.TextMessage, []byte(errMessage))
 		}
 	} else {
-		errMessage := "Invalid username format"
+		errMessage := "invalid username format"
 		conn.WriteMessage(websocket.TextMessage, []byte(errMessage))
 	}
 }
@@ -241,13 +240,13 @@ func loadConfig() (*Config, error) {
 
 func (c *Chat) userJoined(conn *websocket.Conn) {
 	username := getUsername(conn)
-	formattedMessage := fmt.Sprintf("%s has joined the chat", username)
+	formattedMessage := fmt.Sprintf("++> %s has joined the chat", username)
 	c.broadcast([]byte(formattedMessage))
 }
 
 func (c *Chat) userLeft(conn *websocket.Conn) {
 	username := getUsername(conn)
-	formattedMessage := fmt.Sprintf("%s has left the chat", username)
+	formattedMessage := fmt.Sprintf("--> %s has left the chat", username)
 	c.broadcast([]byte(formattedMessage))
 	delete(c.clients, conn)
 	conn.Close()
@@ -256,7 +255,7 @@ func (c *Chat) userLeft(conn *websocket.Conn) {
 
 func getMOTD(chatName string) (string, error) {
 	if chatName == "" {
-		return "", fmt.Errorf("Chat name is required")
+		return "", fmt.Errorf("chat name is required")
 	}
 
 	sanitizedChatName := sanitizeString(chatName, 50, az09)
