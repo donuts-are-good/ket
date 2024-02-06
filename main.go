@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -14,6 +16,13 @@ var (
 	upgrader = websocket.Upgrader{}
 	chats    = make(map[string]*Chat)
 )
+
+type Config struct {
+	Port         int      `json:"port"`
+	ChatServer   string   `json:"chat_server"`
+	URL          string   `json:"url"`
+	DefaultRooms []string `json:"default_rooms"`
+}
 
 type Chat struct {
 	name    string
@@ -77,9 +86,31 @@ func getUsername(conn *websocket.Conn) string {
 	return conn.RemoteAddr().String()
 }
 
+func loadConfig() (*Config, error) {
+	file, err := os.Open("config.json")
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	var config Config
+	err = json.NewDecoder(file).Decode(&config)
+	if err != nil {
+		return nil, err
+	}
+
+	return &config, nil
+}
+
 func main() {
+	config, err := loadConfig()
+	if err != nil {
+		log.Fatalf("Error loading config: %v", err)
+	}
+
 	http.HandleFunc("/ws", handleWebSocket)
 
-	fmt.Println("Server started on http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	addr := fmt.Sprintf(":%d", config.Port)
+	fmt.Printf("Server started on http://localhost%s\n", addr)
+	log.Fatal(http.ListenAndServe(addr, nil))
 }
