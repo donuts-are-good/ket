@@ -55,7 +55,7 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc(config.SocketPath, handleWebSocket)
 	r.HandleFunc("/", serveIndex)
-	r.HandleFunc("/chat", serveChat)
+	r.HandleFunc("/web", serveChat)
 
 	addr := fmt.Sprintf(":%d", config.Port)
 	fmt.Printf("Server started on %s%s\n", config.URL, addr)
