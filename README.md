@@ -2,7 +2,7 @@
 chat server written in go supporting multiple rooms over websockets
 
 ### chat
-clients can connect to the server using a websocket connection. the chat room name should be specified as a query parameter in the url (e.g. ws://example.com/chat?chatname=general).
+clients can connect to the server using a websocket connection. the chat room name should be specified as a query parameter in the url (e.g. ws://example.com/chat?room=general).
 
 once connected, clients can send messages to the server. if a message looks like "/user mycoolusername", the server will interpret the message as a new username for the client.
 
