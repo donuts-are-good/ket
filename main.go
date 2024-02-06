@@ -4,19 +4,27 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gorilla/websocket"
 )
 
 var (
-	upgrader = websocket.Upgrader{}
-	chats    = make(map[string]*Chat)
-	config   *Config
+	upgrader = websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool {
+			// Allow requests from the specified origin
+			return r.Header.Get("Origin") == config.URL
+		},
+	}
+	chats  = make(map[string]*Chat)
+	config *Config
+	users  = make(map[*websocket.Conn]string)
 )
 
 type Config struct {
@@ -40,6 +48,7 @@ func (c *Chat) broadcast(message []byte) {
 			log.Printf("Error broadcasting message to client: %v", err)
 			client.Close()
 			delete(c.clients, client)
+			delete(users, client)
 		}
 	}
 }
@@ -93,19 +102,56 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 			log.Printf("Error reading message: %v", err)
 			delete(chat.clients, conn)
 			conn.Close()
+			delete(users, conn)
 			break
 		}
 
-		username := getUsername(conn)
-		timestamp := strconv.FormatInt(time.Now().Unix(), 10)
-		formattedMessage := fmt.Sprintf("%s(%s): %s", username, timestamp, string(message))
+		if strings.HasPrefix(string(message), "/user ") {
+			newUsername := strings.TrimPrefix(string(message), "/user ")
+			if isUsernameAvailable(newUsername) {
+				oldUsername := users[conn]
+				users[conn] = newUsername
+				formattedMessage := fmt.Sprintf("%s is now known as %s", oldUsername, newUsername)
+				chat.broadcast([]byte(formattedMessage))
+			} else {
+				errMessage := fmt.Sprintf("Username %s is already taken", newUsername)
+				conn.WriteMessage(websocket.TextMessage, []byte(errMessage))
+			}
+		} else {
+			username := getUsername(conn)
+			timestamp := strconv.FormatInt(time.Now().Unix(), 10)
+			formattedMessage := fmt.Sprintf("%s(%s): %s", username, timestamp, string(message))
 
-		chat.broadcast([]byte(formattedMessage))
+			chat.broadcast([]byte(formattedMessage))
+		}
 	}
 }
 
 func getUsername(conn *websocket.Conn) string {
-	return conn.RemoteAddr().String()
+	username := users[conn]
+	if username != "" {
+		return username
+	}
+
+	// Generate a random 4-character alphanumeric string
+	charset := "ABCDEF1234567890"
+	b := make([]byte, 4)
+	for i := range b {
+		b[i] = charset[rand.Intn(len(charset))]
+	}
+
+	username = "user#" + string(b)
+	users[conn] = username
+	return username
+}
+
+func isUsernameAvailable(username string) bool {
+	for _, u := range users {
+		if u == username {
+			return false
+		}
+	}
+	return true
 }
 
 func loadConfig() (*Config, error) {
