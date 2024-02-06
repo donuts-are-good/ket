@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chat Interface</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <style>
+    * {
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <pre>
+      <div id="chatMessages"></div>
+    </pre>
+    <div class="input-group mb-3">
+      <input type="text" id="messageInput" class="form-control" placeholder="Enter message..." aria-label="Enter message">
+      <button class="btn btn-primary" id="sendMessageButton">Send</button>
+    </div>
+  </div>
+
+  <script>
+    const socket = new WebSocket('ws://5.161.212.7:2082/chat?room=general');
+    const chatMessages = document.getElementById('chatMessages');
+    const messageInput = document.getElementById('messageInput');
+    const sendMessageButton = document.getElementById('sendMessageButton');
+
+    socket.addEventListener('open', function (event) {
+      console.log('Connected to WebSocket server');
+    });
+
+    socket.addEventListener('message', function (event) {
+      const message = event.data;
+      const messageElement = document.createElement('p');
+      messageElement.innerText = message;
+      chatMessages.appendChild(messageElement);
+    });
+
+    sendMessageButton.addEventListener('click', function () {
+      const message = messageInput.value;
+      socket.send(message);
+      messageInput.value = '';
+    });
+  </script>
+</body>
+</html>
