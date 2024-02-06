@@ -114,9 +114,16 @@ func handleMessage(conn *websocket.Conn, chat *Chat, message []byte) {
 		handleUserList(conn, chat)
 	} else if strings.HasPrefix(string(message), "/help") {
 		handleHelp(conn)
+	} else if strings.HasPrefix(string(message), "/") {
+		handleUnknownCommand(conn)
 	} else {
 		handleChatMessage(conn, chat, message)
 	}
+}
+
+func handleUnknownCommand(conn *websocket.Conn) {
+	message := "Unknown command. Type /help for a list of available commands."
+	conn.WriteMessage(websocket.TextMessage, []byte(message))
 }
 
 func handleHelp(conn *websocket.Conn) {
