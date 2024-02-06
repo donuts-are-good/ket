@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -15,6 +16,7 @@ import (
 var (
 	upgrader = websocket.Upgrader{}
 	chats    = make(map[string]*Chat)
+	config   *Config
 )
 
 type Config struct {
@@ -37,6 +39,19 @@ func (c *Chat) broadcast(message []byte) {
 			client.Close()
 			delete(c.clients, client)
 		}
+	}
+}
+
+func (c *Chat) sendMOTD(conn *websocket.Conn) {
+	motd, err := getMOTD(c.name)
+	if err != nil {
+		log.Printf("Error getting MOTD: %v", err)
+		return
+	}
+
+	err = conn.WriteMessage(websocket.TextMessage, []byte(motd))
+	if err != nil {
+		log.Printf("Error sending MOTD to client: %v", err)
 	}
 }
 
@@ -64,6 +79,11 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	}
 
 	chat.clients[conn] = true
+
+	// Send MOTD to new user
+	if len(chat.clients) == 1 {
+		chat.sendMOTD(conn)
+	}
 
 	for {
 		_, message, err := conn.ReadMessage()
@@ -102,8 +122,23 @@ func loadConfig() (*Config, error) {
 	return &config, nil
 }
 
+func getMOTD(chatName string) (string, error) {
+	motdPath := filepath.Join("motd", chatName+".motd.txt")
+	if _, err := os.Stat(motdPath); os.IsNotExist(err) {
+		motdPath = filepath.Join("motd", "default.motd.txt")
+	}
+
+	motdBytes, err := os.ReadFile(motdPath)
+	if err != nil {
+		return "", err
+	}
+
+	return string(motdBytes), nil
+}
+
 func main() {
-	config, err := loadConfig()
+	var err error
+	config, err = loadConfig()
 	if err != nil {
 		log.Fatalf("Error loading config: %v", err)
 	}
