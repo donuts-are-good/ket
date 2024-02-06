@@ -169,7 +169,6 @@ func handleRoomJoin(conn *websocket.Conn, chat *Chat, message []byte) {
 	roomName := strings.TrimPrefix(string(message), "/join ")
 	roomName = sanitizeString(roomName, 20, azAZ09)
 	if roomName != "" {
-		chat.userLeft(conn)
 		chatName := roomName
 		chat, ok := chats[chatName]
 		if !ok {
@@ -182,6 +181,8 @@ func handleRoomJoin(conn *websocket.Conn, chat *Chat, message []byte) {
 		chat.clients[conn] = true
 		chat.userJoined(conn)
 		chat.sendMOTD(conn)
+
+		chat.userLeft(conn)
 	}
 }
 
