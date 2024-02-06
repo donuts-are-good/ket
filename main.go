@@ -115,8 +115,8 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 			}
 		} else {
 			username := getUsername(conn)
-			timestamp := strconv.FormatInt(time.Now().Unix(), 10)
-			formattedMessage := fmt.Sprintf("%s(%s): %s", username, timestamp, string(message))
+			timestamp := strconv.FormatInt(time.Now().UnixNano(), 10)
+			formattedMessage := fmt.Sprintf("%s(%s): %s", username, timestamp[:10], string(message))
 
 			chat.broadcast([]byte(formattedMessage))
 		}
