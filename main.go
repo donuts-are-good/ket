@@ -33,6 +33,7 @@ type Config struct {
 	DefaultRooms []string `json:"default_rooms"`
 	SocketPath   string   `json:"socket_path"`
 	WebPath      string   `json:"web_path"`
+	MotdPath     string   `json:"motd_path"`
 }
 
 type Chat struct {
@@ -166,9 +167,9 @@ func loadConfig() (*Config, error) {
 }
 
 func getMOTD(chatName string) (string, error) {
-	motdPath := filepath.Join(config.WebPath, "motd", chatName+".motd.txt")
+	motdPath := filepath.Join(config.MotdPath, chatName+".motd.txt")
 	if _, err := os.Stat(motdPath); os.IsNotExist(err) {
-		motdPath = filepath.Join(config.WebPath, "motd", "default.motd.txt")
+		motdPath = filepath.Join(config.MotdPath, "default.motd.txt")
 	}
 
 	motdBytes, err := os.ReadFile(motdPath)
