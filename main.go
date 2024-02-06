@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -16,6 +17,7 @@ import (
 )
 
 var (
+	azAZ09   = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	upgrader = websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
 			return true
@@ -104,6 +106,7 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 
 		if strings.HasPrefix(string(message), "/user ") {
 			newUsername := strings.TrimPrefix(string(message), "/user ")
+			newUsername = sanitizeString(newUsername, 20, azAZ09)
 			if isUsernameAvailable(newUsername) {
 				oldUsername := users[conn]
 				users[conn] = newUsername
@@ -121,6 +124,19 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 			chat.broadcast([]byte(formattedMessage))
 		}
 	}
+}
+
+func sanitizeString(dirtystring string, maxlength int, charset string) string {
+	pattern := fmt.Sprintf("[^%s]", charset)
+	reg := regexp.MustCompile(pattern)
+
+	cleanString := reg.ReplaceAllString(dirtystring, "")
+
+	if len(cleanString) > maxlength {
+		cleanString = cleanString[:maxlength]
+	}
+
+	return cleanString
 }
 
 func getUsername(conn *websocket.Conn) string {
@@ -181,14 +197,23 @@ func (c *Chat) userLeft(conn *websocket.Conn) {
 }
 
 func getMOTD(chatName string) (string, error) {
-	motdPath := filepath.Join(config.MotdPath, chatName+".motd.txt")
+	if chatName == "" {
+		return "", fmt.Errorf("Chat name is required")
+	}
+
+	sanitizedChatName := sanitizeString(chatName, 50, azAZ09)
+	if sanitizedChatName != chatName {
+		return "", fmt.Errorf("invalid characters in chat name")
+	}
+
+	motdPath := filepath.Join(config.MotdPath, sanitizedChatName+".motd.txt")
 	if _, err := os.Stat(motdPath); os.IsNotExist(err) {
 		motdPath = filepath.Join(config.MotdPath, "default.motd.txt")
 	}
 
 	motdBytes, err := os.ReadFile(motdPath)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error reading MOTD file: %v", err)
 	}
 
 	return string(motdBytes), nil
