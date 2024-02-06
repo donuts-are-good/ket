@@ -1,7 +1,7 @@
 {
-  "port": 8080,
+  "port": 2082,
   "chat_server": "ket server",
-  "url": "example.com",
+  "url": "socket.3ck0.com",
   "default_rooms": ["general", "random", "dev", "all"],
   "socket_path": "/chat",
   "web_path": "web",
